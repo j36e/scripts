@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Variables
+bgpath=~/Documents/Wallpapers
+msg="Nouveau fond d'écran"
+
+if [ "$1" = "r" ]; then
+	bgname=$(ls $bgpath | shuf -n 1 -)
+	# notify-send "$msg" "$bgname"
+	wal -i "$bgpath/$bgname"
+#else
+	# wal -i "$1"
+fi

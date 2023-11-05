@@ -1,0 +1,26 @@
+#!/bin/sh
+
+#################################################
+#                      AIDE                     #
+#################################################
+# light p	- Luminosité augmentée de $step pourcent(s)
+# light m	- Luminosité diminuée de $step pourcent(s)
+# light [n]	- Luminosité définie à n pourcent(s)
+
+
+#################################################
+#                     CONFIG                    #
+#################################################
+step=2						# En %
+path=/sys/class/backlight/intel_backlight	# Pas de slash
+
+
+b=$(cat $path/brightness)
+mb=$(cat $path/max_brightness)
+case $1 in
+	"m") b=$(($b - $step * $mb / 100));;
+	"p") b=$(($b + $step * $mb / 100));;
+	*)   b=$((192 * $1));;
+esac
+
+echo $b > $path/brightness
