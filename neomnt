@@ -1,0 +1,53 @@
+#!/bin/python
+
+# TODO
+# Deux appels à lsblk pour éviter de surcharger le json ???
+# Fichier de configuration pour les mountpoints par défaut
+# SUdo ??
+
+import subprocess
+import json
+
+default_mountpoints = ["/mnt/{part}", "/mnt/{drive}/{part}", "/media/{part}", "/media/{drive}/{part}"]
+
+def exec(cmd):
+    return subprocess.run(cmd.split(" "), stdout=subprocess.PIPE).stdout.decode("utf-8")
+
+def dmenu(prompt, choices):
+    r = subprocess.run(["dmenu", "-p", prompt], input=bytearray("\n".join(choices), "utf-8"), stdout=subprocess.PIPE).stdout.decode("utf-8").rstrip()
+    if r == "":
+        exit()
+    return r
+
+lsblk = json.loads(exec("lsblk -o name,model,mountpoints -e 7 -J"))["blockdevices"]
+
+i = 0
+dict = {}
+for drive in lsblk:
+    dict[f"{drive['name']} ({drive['model']})"] = (i, drive["name"])
+    i += 1
+
+id, drive = dict[dmenu("Drive", dict.keys())]
+
+dict = {}
+for part in lsblk[id]["children"]:
+    if part['mountpoints'][0]:
+        dict[f"{part['name']} ({part['mountpoints'][0]})"] = (part["mountpoints"][0], part["name"])
+    else:
+        dict[part['name']] = (False, part["name"])
+
+mountpoint, part = dict[dmenu("Part", dict.keys())]
+
+if mountpoint:
+    if dmenu(f"Unmount /dev/{part}", ["Yes", "No"]) == "Yes":
+        exec(f"umount /dev/{part}")
+        exec(f"rmdir {mountpoint}")
+    exit()
+
+mountpoints = []
+for mountpoint in default_mountpoints:
+    mountpoints.append(mountpoint.replace("{drive}", drive).replace("{part}", part))
+mountpoint = dmenu("Mountpoint", mountpoints)
+
+
+exec(f"mount /dev/{part} {mountpoint} --mkdir")
