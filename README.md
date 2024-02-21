@@ -4,15 +4,15 @@
 - Le script explose si une partition est montée à deux endroits différents
 - Les erreurs sont passées sous le tapis pour l'instant
 
-Pour exécuter des commandes avec sudo sans mot de passe, il faut soit modifier /etc/sudoers avec la commande visudo (à la main ça marche aussi) soit modifier l'un des fichiers dans /etc/sudoers.d (si le dossier existe c'est probablement ici qu'il faut regarder)
+Pour exécuter des commandes avec sudo sans mot de passe, il faut soit modifier /etc/sudoers avec la commande visudo (à la main ça marche aussi) soit modifier l'un des fichiers dans /etc/sudoers.d (si le dossier existe c'est probablement ici qu'il faut regarder)__
 Mon /etc/sudoers.d/wheel:
 
-%wheel ALL=(ALL:ALL) ALL
-%wheel ALL=(ALL:ALL) NOPASSWD:/bin/rmdir
-%wheel ALL=(ALL:ALL) NOPASSWD:/bin/mount
-%wheel ALL=(ALL:ALL) NOPASSWD:/bin/umount
+%wheel ALL=(ALL:ALL) ALL__
+%wheel ALL=(ALL:ALL) NOPASSWD:/bin/rmdir__
+%wheel ALL=(ALL:ALL) NOPASSWD:/bin/mount__
+%wheel ALL=(ALL:ALL) NOPASSWD:/bin/umount__
 
-En gros:
-%groupe ALL=(ALL:ALL) ALL - le groupe wheel peut tout faire avec sudo
-bonjour ALL=(ALL:ALL) NOPASSWD:/bin/jojo - bonjour peut exécuter jojo sans mot de passe
-bernard ALL=(ALL:ALL) NOPASSWD:ALL - bernard est le maître du monde
+En gros:__
+%groupe ALL=(ALL:ALL) ALL - le groupe wheel peut tout faire avec sudo__
+bonjour ALL=(ALL:ALL) NOPASSWD:/bin/jojo - bonjour peut exécuter jojo sans mot de passe__
+bernard ALL=(ALL:ALL) NOPASSWD:ALL - bernard est le maître du monde__
