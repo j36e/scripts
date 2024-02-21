@@ -1,0 +1,53 @@
+#!/bin/python
+
+# TODO
+# Fichier de configuration pour les mountpoints par défaut
+# Quand une partition est montée à deux endroits différents ça explose
+# Et en plus de ça on peut pas monter une partition à deux endroits différents avec ce script
+# Ça sert à quoi de faire ça même
+
+import subprocess
+import json
+
+default_mountpoints = ["/mnt/{part}", "/mnt/{drive}/{part}", "/media/{part}", "/media/{drive}/{part}"]
+
+def exec(cmd):
+    return subprocess.run(cmd.split(), capture_output=True, text=True).stdout
+
+def dmenu(prompt, choices):
+    r = subprocess.run(["dmenu", "-p", prompt], input="\n".join(choices), capture_output=True, text=True).stdout[:-1]
+    if r == "":
+        exit()
+    return r
+
+lsblk = json.loads(exec("lsblk -o name,model,mountpoints -e 7 -J"))["blockdevices"]
+
+i = 0
+dict = {}
+for drive in lsblk:
+    dict[f"{drive['name']} ({drive['model']})"] = (i, drive["name"])
+    i += 1
+
+id, drive = dict[dmenu("Drive", dict.keys())]
+
+dict = {}
+for part in lsblk[id]["children"]:
+    if part['mountpoints'][0]:
+        dict[f"{part['name']} ({part['mountpoints'][0]})"] = (part["mountpoints"][0], part["name"])
+    else:
+        dict[part['name']] = (False, part["name"])
+
+mountpoint, part = dict[dmenu("Part", dict.keys())]
+
+if mountpoint:
+    if dmenu(f"Unmount /dev/{part}", ["Yes", "No"]) == "Yes":
+        exec(f"sudo umount /dev/{part}")
+        exec(f"sudo rmdir {mountpoint}")
+    exit()
+
+mountpoints = []
+for mountpoint in default_mountpoints:
+    mountpoints.append(mountpoint.replace("{drive}", drive).replace("{part}", part))
+mountpoint = dmenu("Mountpoint", mountpoints)
+
+exec(f"sudo mount --mkdir /dev/{part} {mountpoint} -o uid={exec("id -u")[:-1]}")
